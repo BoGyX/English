@@ -25,10 +25,16 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Копируем конфиг nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Копируем entrypoint скрипт
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+# Создаем скрипт для генерации runtime конфига
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'cat > /usr/share/nginx/html/config.js <<EOF' >> /entrypoint.sh && \
+    echo 'window.ENV = {' >> /entrypoint.sh && \
+    echo '  VITE_API_URL: '"'"'${VITE_API_URL:-http://localhost:9090/api}'"'"'' >> /entrypoint.sh && \
+    echo '};' >> /entrypoint.sh && \
+    echo 'EOF' >> /entrypoint.sh && \
+    echo 'exec nginx -g "daemon off;"' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
