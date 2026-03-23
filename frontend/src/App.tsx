@@ -6,6 +6,8 @@ import Register from './pages/Register'
 import Courses from './pages/Courses'
 import Vocabulary from './pages/Vocabulary'
 import Progress from './pages/Progress'
+import Reader from './pages/Reader'
+import ReadText from './pages/ReadText'
 import CourseDetail from './pages/CourseDetail'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminCourses from './pages/AdminCourses'
@@ -47,6 +49,8 @@ function App() {
           <Route path="courses/:id" element={<CourseDetail />} />
           <Route path="vocabulary" element={<Vocabulary />} />
           <Route path="progress" element={<Progress />} />
+          <Route path="reader" element={<Reader />} />
+          <Route path="reader/:id" element={<ReadText />} />
           <Route
             path="admin"
             element={

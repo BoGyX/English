@@ -19,12 +19,13 @@ func NewDictionaryHandler(dictionaryService *services.DictionaryService) *Dictio
 
 // GetWordInfoResponse ответ с информацией о слове
 type GetWordInfoResponse struct {
-	Word      string   `json:"word"`
-	Phonetic  string   `json:"phonetic"`
-	AudioURL  string   `json:"audio_url,omitempty"`
-	Definition string  `json:"definition"`
-	Example   string   `json:"example,omitempty"`
-	Meanings  []string `json:"meanings,omitempty"` // Все определения
+	Word        string   `json:"word"`
+	Phonetic    string   `json:"phonetic"`
+	AudioURL    string   `json:"audio_url,omitempty"`
+	Translation string   `json:"translation"` // Русский перевод
+	Definition  string   `json:"definition"`
+	Example     string   `json:"example,omitempty"`
+	Meanings    []string `json:"meanings,omitempty"` // Все определения
 }
 
 // GetWordInfo получает информацию о слове из Dictionary API
@@ -45,52 +46,71 @@ func (h *DictionaryHandler) GetWordInfo(c *gin.Context) {
 		return
 	}
 
-	// Получаем информацию о слове
-	entry, err := h.dictionaryService.GetWordInfo(word)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Формируем ответ
+	// Формируем базовый ответ
 	response := GetWordInfoResponse{
-		Word: entry.Word,
-		Phonetic: entry.Phonetic,
+		Word: word,
 	}
 
-	// Получаем фонетику
-	if response.Phonetic == "" && len(entry.Phonetics) > 0 {
-		response.Phonetic = entry.Phonetics[0].Text
+	// Сначала пытаемся получить русский перевод из встроенного словаря
+	translation, err := h.dictionaryService.TranslateToRussian(word)
+	if err == nil {
+		response.Translation = translation
+	} else {
+		// Логируем ошибку перевода
+		println("Translation error for word", word, ":", err.Error())
 	}
 
-	// Получаем аудио URL
-	for _, phonetic := range entry.Phonetics {
-		if phonetic.Audio != "" {
-			response.AudioURL = phonetic.Audio
-			break
+	// Пытаемся получить информацию из Dictionary API
+	entry, err := h.dictionaryService.GetWordInfo(word)
+	if err == nil {
+		// Успешно получили данные из API
+		response.Phonetic = entry.Phonetic
+
+		// Получаем фонетику
+		if response.Phonetic == "" && len(entry.Phonetics) > 0 {
+			response.Phonetic = entry.Phonetics[0].Text
 		}
-	}
 
-	// Получаем первое определение
-	if len(entry.Meanings) > 0 && len(entry.Meanings[0].Definitions) > 0 {
-		response.Definition = entry.Meanings[0].Definitions[0].Definition
-		
-		// Получаем пример
-		if entry.Meanings[0].Definitions[0].Example != "" {
-			response.Example = entry.Meanings[0].Definitions[0].Example
-		}
-	}
-
-	// Собираем все определения
-	var allMeanings []string
-	for _, meaning := range entry.Meanings {
-		for _, def := range meaning.Definitions {
-			if def.Definition != "" {
-				allMeanings = append(allMeanings, def.Definition)
+		// Получаем аудио URL
+		for _, phonetic := range entry.Phonetics {
+			if phonetic.Audio != "" {
+				response.AudioURL = phonetic.Audio
+				break
 			}
 		}
-	}
-	response.Meanings = allMeanings
 
+		// Получаем первое определение
+		if len(entry.Meanings) > 0 && len(entry.Meanings[0].Definitions) > 0 {
+			response.Definition = entry.Meanings[0].Definitions[0].Definition
+			
+			// Получаем пример
+			if entry.Meanings[0].Definitions[0].Example != "" {
+				response.Example = entry.Meanings[0].Definitions[0].Example
+			}
+		}
+
+		// Собираем все определения
+		var allMeanings []string
+		for _, meaning := range entry.Meanings {
+			for _, def := range meaning.Definitions {
+				if def.Definition != "" {
+					allMeanings = append(allMeanings, def.Definition)
+				}
+			}
+		}
+		response.Meanings = allMeanings
+
+		// Если перевода не было, используем английское определение
+		if response.Translation == "" && response.Definition != "" {
+			response.Translation = "📖 " + response.Definition
+		}
+	} else {
+		// API не ответил, но у нас может быть перевод
+		if response.Translation == "" {
+			response.Translation = "Перевод не найден"
+		}
+	}
+
+	// Всегда возвращаем 200, даже если не все данные получены
 	c.JSON(http.StatusOK, response)
 }

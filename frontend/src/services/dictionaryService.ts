@@ -2,16 +2,25 @@ import api from './api'
 
 export interface WordInfo {
   word: string
-  phonetic: string
-  audio_url?: string
-  definition: string
+  phonetic?: string
+  translation: string
   example?: string
-  meanings?: string[]
+  audio_url?: string
+  definitions?: Array<{
+    partOfSpeech: string
+    definition: string
+    example?: string
+  }>
 }
 
 export const dictionaryService = {
   async getWordInfo(word: string): Promise<WordInfo> {
-    const response = await api.get<WordInfo>(`/dictionary/${encodeURIComponent(word)}`)
-    return response.data
-  },
+    try {
+      const response = await api.get<WordInfo>(`/dictionary/${encodeURIComponent(word)}`)
+      return response.data
+    } catch (error) {
+      console.error('Error fetching word info:', error)
+      throw error
+    }
+  }
 }

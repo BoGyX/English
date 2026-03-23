@@ -395,3 +395,17 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_update_course_progress
 AFTER INSERT OR UPDATE ON user_decks
 FOR EACH ROW EXECUTE FUNCTION update_course_progress();
+
+-- ===================================
+-- Таблица для текстов для чтения (Ридер)
+-- ===================================
+CREATE TABLE IF NOT EXISTS reading_texts (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_reading_texts_user_id ON reading_texts(user_id);

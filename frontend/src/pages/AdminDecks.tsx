@@ -216,7 +216,7 @@ export default function AdminDecks() {
 
         // Перевод — только по флажку (и тоже с учетом overwrite)
         if (dictionaryFillTranslation) {
-          if (shouldOverwrite || !next.translation) next.translation = wordInfo.definition || next.translation || ''
+          if (shouldOverwrite || !next.translation) next.translation = wordInfo.translation || next.translation || ''
         }
 
         return next

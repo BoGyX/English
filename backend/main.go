@@ -168,6 +168,7 @@ func main() {
 	userCardService := services.NewUserCardService(db)
 	trainingSessionService := services.NewTrainingSessionService(db)
 	dictionaryService := services.NewDictionaryService()
+	readingTextService := services.NewReadingTextService(db)
 
 	// Инициализируем Moodle сервис (если включен)
 	var moodleService *services.MoodleService
@@ -225,6 +226,7 @@ func main() {
 	trainingSessionHandler := handlers.NewTrainingSessionHandler(trainingSessionService)
 	dictionaryHandler := handlers.NewDictionaryHandler(dictionaryService)
 	uploadHandler := handlers.NewUploadHandler()
+	readingTextHandler := handlers.NewReadingTextHandler(readingTextService)
 
 	// Настраиваем роутер
 	router := gin.Default()
@@ -329,6 +331,12 @@ func main() {
 		api.PUT("/vocabulary/:id", vocabHandler.UpdatePersonalVocabulary)
 		api.PUT("/vocabulary/:id/stats", vocabHandler.UpdatePersonalVocabularyStats)
 		api.DELETE("/vocabulary/:id", vocabHandler.DeletePersonalVocabulary)
+
+		// Reading Texts endpoints
+		api.GET("/reading-texts", readingTextHandler.GetAllReadingTexts)
+		api.GET("/reading-texts/:id", readingTextHandler.GetReadingTextByID)
+		api.POST("/reading-texts", readingTextHandler.CreateReadingText)
+		api.DELETE("/reading-texts/:id", readingTextHandler.DeleteReadingText)
 
 		// User Courses endpoints (прогресс пользователя по курсам)
 		api.GET("/user-courses", userCourseHandler.GetAllUserCourses)
