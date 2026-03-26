@@ -10,7 +10,7 @@ RUN npm ci
 COPY . .
 
 # Устанавливаем переменную окружения для сборки
-ARG VITE_API_URL=http://localhost:9090/api
+ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
 # Собираем приложение
@@ -29,7 +29,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 RUN echo '#!/bin/sh' > /entrypoint.sh && \
     echo 'cat > /usr/share/nginx/html/config.js <<EOF' >> /entrypoint.sh && \
     echo 'window.ENV = {' >> /entrypoint.sh && \
-    echo '  VITE_API_URL: '"'"'${VITE_API_URL:-http://localhost:9090/api}'"'"'' >> /entrypoint.sh && \
+    echo '  VITE_API_URL: '"'"'${VITE_API_URL:-/api}'"'"'' >> /entrypoint.sh && \
     echo '};' >> /entrypoint.sh && \
     echo 'EOF' >> /entrypoint.sh && \
     echo 'exec nginx -g "daemon off;"' >> /entrypoint.sh && \

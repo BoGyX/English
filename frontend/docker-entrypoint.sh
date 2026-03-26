@@ -4,7 +4,7 @@ set -e
 # Генерируем config.js с переменными окружения
 cat > /usr/share/nginx/html/config.js <<EOF
 window.ENV = {
-  VITE_API_URL: '${VITE_API_URL:-http://localhost:9090/api}'
+  VITE_API_URL: '${VITE_API_URL:-/api}'
 };
 EOF
 

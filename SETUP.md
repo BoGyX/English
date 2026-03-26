@@ -1,33 +1,36 @@
 # Настройка проекта
 
-## Конфигурация через .env
+Все основные параметры задаются через `.env` в корне проекта.
 
-Все порты и URL настраиваются через файл `.env` в корне проекта.
+## Быстрый запуск
 
+```bash
+docker compose up --build
+```
 
+## Доступ к сервисам
 
-### Как изменить порты
+После запуска:
 
-1. Отредактируйте `.env` файл
-2. Пересобери контейнеры:
-   
-   docker-compose down
-   docker-compose up --build
+- Frontend: `http://localhost:3000` или значение `FRONTEND_PORT`
+- API: `http://localhost:9090` или значение `API_PORT`
+- Swagger: `http://localhost:9090/swagger/index.html`
+- Adminer: `http://localhost:8080` или значение `ADMINER_PORT`
+- PostgreSQL: `localhost:5432` или значение `DB_PORT`
 
+## Как поменять порты
 
-### Доступ к сервисам. ну у нас так как мтнимум
+1. Измените значения в `.env`
+2. Пересоберите контейнеры:
 
-После запуска `docker-compose up`:
+```bash
+docker compose down
+docker compose up --build
+```
 
-- **Frontend**: http://localhost:3000 (или значение `FRONTEND_PORT`)
-- **API**: http://localhost:9090 (или значение `API_PORT`)
-- **Swagger**: http://localhost:9090/swagger/index.html
-- **Adminer**: http://localhost:8080 (или значение `ADMINER_PORT`)
-- **PostgreSQL**: localhost:5433 (или значение `DB_PORT`)
+## Важно
 
-
-### Важно
-
-- Все изменения портов делайте только в `.env` файле
-- После изменения `.env` нужна пересборка контейнеров
-- `API_URL` должен совпадать с `API_PORT` для корректной работы
+- Frontend теперь сам публикует `FRONTEND_PORT`
+- Отдельный `nginx` больше не используется
+- Frontend ходит в backend через относительный путь `/api`
+- Если меняете `API_PORT`, backend будет доступен на новом порту с хоста, а frontend продолжит работать через свой `/api` proxy
